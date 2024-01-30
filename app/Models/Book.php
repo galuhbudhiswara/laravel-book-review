@@ -28,6 +28,10 @@ class Book extends Model
         return $query->withAvg(['reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)], 'rating')->orderBy('reviews_avg_rating', 'desc');
     }
 
+    public function scopeMinReview (Builder $query, int $minReview):Builder {
+        return $query->having('reviews_count', '>=', $minReview);
+    }
+
     private function dateRangeFilter(Builder $query, $from = null, $to = null) {
         if ($from && !$to) {
             $query->where('created_at', '>=', $from);
