@@ -10,6 +10,10 @@ class ReviewController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+     public function __construct() {
+            $this->middleware('throttle:reviews')->only(['store']);
+     }
     public function index()
     {
         //
@@ -28,6 +32,7 @@ class ReviewController extends Controller
      */
     public function store(Request $request, Book $book)
     {
+     
         $data = $request->validate([
             'review' => 'required|min:15',
             'rating' => 'required|min:1|max:5|integer'
