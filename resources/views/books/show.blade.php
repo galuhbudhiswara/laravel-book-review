@@ -18,6 +18,11 @@
         </div>
     </div>
 
+    <div class="mb-4">
+        <a href="{{ route('books.review.create',  $book) }}">
+        Add a Review!!</a>
+    </div>
+
     <div>
         <h2 class="mb-4 text-xl font-semibold">Reviews</h2>
         <ul>

@@ -27,6 +27,7 @@
             </a>
         @endforeach
     </div>
+    
 
     <ul>
         @forelse ($books as $book)
