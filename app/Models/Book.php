@@ -16,16 +16,26 @@ class Book extends Model
     public function scopeTitle (Builder $query, string $title):Builder {
         return $query->where('title', 'LIKE', '%'. $title . '%' );
     }
+    
+    public function scopeWithReviewsCount(Builder $query, $from = null, $to = null):Builder {
+            return $query->withCount([
+                'reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)
+            ]);
+        }
+
+        public function scopeWithAvgRating(Builder $query, $from = null, $to = null):Builder {
+            return $query->withAvg(['reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)
+        ], 'rating');
+        }
 
     public function scopePopular(Builder $query, $from = null, $to = null):Builder {
-        return $query->withCount([
-            'reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)
-            ])
+        return $query->withReviewCount()
             ->orderBy('reviews_count', 'desc');
     }
 
     public function scopeHighestRated (Builder $query,  $from = null, $to = null):Builder {
-        return $query->withAvg(['reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)], 'rating')->orderBy('reviews_avg_rating', 'desc');
+        return $query->withAvgRating()
+        ->orderBy('reviews_avg_rating', 'desc');
     }
 
     public function scopeMinReviews (Builder $query, int $minReview):Builder {
@@ -59,6 +69,10 @@ class Book extends Model
             ->minReviews(5);
     }
 
+    protected static function booted () {
+        static::updated(fn (Book $book) =>cache()->forget('book:' . $book));
+        static::created(fn (Review $review) =>cache()->forget('book:' . $review->book_id));
+    }
 
     private function dateRangeFilter(Builder $query, $from = null, $to = null) {
         if ($from && !$to) {
